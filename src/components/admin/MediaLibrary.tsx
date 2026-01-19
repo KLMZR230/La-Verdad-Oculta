@@ -8,6 +8,7 @@ interface MediaItem {
     id: string;
     filename: string;
     original_filename: string;
+    storage_path: string;
     url: string;
     mime_type: string;
     size_bytes: number;
@@ -318,8 +319,8 @@ export function MediaLibrary({ onSelect, selectable = false }: MediaLibraryProps
                             key={item.id}
                             onClick={() => handleSelect(item)}
                             className={`group relative aspect-square rounded-xl overflow-hidden cursor-pointer ring-2 transition-all ${selectable
-                                    ? 'ring-transparent hover:ring-amber-500'
-                                    : 'ring-transparent hover:ring-primary-500'
+                                ? 'ring-transparent hover:ring-amber-500'
+                                : 'ring-transparent hover:ring-primary-500'
                                 }`}
                         >
                             <Image
