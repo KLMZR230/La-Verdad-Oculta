@@ -15,7 +15,12 @@ interface MediaItem {
     created_at: string;
 }
 
-export function MediaLibrary() {
+interface MediaLibraryProps {
+    onSelect?: (url: string) => void;
+    selectable?: boolean;
+}
+
+export function MediaLibrary({ onSelect, selectable = false }: MediaLibraryProps) {
     const [media, setMedia] = useState<MediaItem[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isUploading, setIsUploading] = useState(false);
@@ -55,40 +60,92 @@ export function MediaLibrary() {
         setError(null);
         setUploadProgress(0);
 
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+            setError('Debes iniciar sesión');
+            setIsUploading(false);
+            return;
+        }
+
         const totalFiles = files.length;
         let uploaded = 0;
 
         for (const file of Array.from(files)) {
             try {
-                const formData = new FormData();
-                formData.append('file', file);
+                // Validate file
+                const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+                if (!allowedTypes.includes(file.type)) {
+                    setError(`Tipo no permitido: ${file.name}`);
+                    continue;
+                }
 
-                const response = await fetch('/api/upload', {
-                    method: 'POST',
-                    body: formData,
-                });
+                if (file.size > 5 * 1024 * 1024) {
+                    setError(`Archivo muy grande (máx 5MB): ${file.name}`);
+                    continue;
+                }
 
-                const result = await response.json();
+                // Generate unique filename
+                const timestamp = Date.now();
+                const randomString = Math.random().toString(36).substring(2, 8);
+                const extension = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+                const filename = `${timestamp}-${randomString}.${extension}`;
+                const storagePath = `uploads/${filename}`;
 
-                if (!response.ok) {
-                    throw new Error(result.error || 'Error al subir');
+                // Upload to Supabase Storage
+                const { error: uploadError } = await supabase.storage
+                    .from('media')
+                    .upload(storagePath, file, {
+                        cacheControl: '31536000',
+                        upsert: false,
+                    });
+
+                if (uploadError) {
+                    console.error('Upload error:', uploadError);
+                    setError(`Error subiendo ${file.name}: ${uploadError.message}`);
+                    continue;
+                }
+
+                // Get public URL
+                const { data: urlData } = supabase.storage
+                    .from('media')
+                    .getPublicUrl(storagePath);
+
+                const publicUrl = urlData.publicUrl;
+
+                // Save to database
+                const { error: dbError } = await supabase
+                    .from('media')
+                    .insert({
+                        filename,
+                        original_filename: file.name,
+                        storage_path: storagePath,
+                        url: publicUrl,
+                        mime_type: file.type,
+                        size_bytes: file.size,
+                        uploaded_by: user.id,
+                    });
+
+                if (dbError) {
+                    console.error('DB error:', dbError);
+                    setError(`Error guardando ${file.name}`);
+                    continue;
                 }
 
                 uploaded++;
                 setUploadProgress(Math.round((uploaded / totalFiles) * 100));
             } catch (err) {
                 console.error('Upload error:', err);
-                setError(err instanceof Error ? err.message : 'Error al subir archivo');
+                setError('Error al subir archivo');
             }
         }
 
         setIsUploading(false);
         setUploadProgress(0);
-        setSuccess(`${uploaded} archivo(s) subido(s) correctamente`);
-        setTimeout(() => setSuccess(null), 3000);
+        if (uploaded > 0) {
+            setSuccess(`${uploaded} archivo(s) subido(s) correctamente`);
+            setTimeout(() => setSuccess(null), 3000);
+        }
         loadMedia();
-
-        // Reset input
         e.target.value = '';
     };
 
@@ -96,12 +153,24 @@ export function MediaLibrary() {
         if (!confirm('¿Eliminar esta imagen?')) return;
 
         try {
-            const response = await fetch(`/api/upload?id=${item.id}`, {
-                method: 'DELETE',
-            });
+            // Delete from storage
+            const { error: storageError } = await supabase.storage
+                .from('media')
+                .remove([item.storage_path || `uploads/${item.filename}`]);
 
-            if (!response.ok) {
-                throw new Error('Error al eliminar');
+            if (storageError) {
+                console.error('Storage delete error:', storageError);
+            }
+
+            // Delete from database
+            const { error: dbError } = await supabase
+                .from('media')
+                .delete()
+                .eq('id', item.id);
+
+            if (dbError) {
+                setError('Error eliminando');
+                return;
             }
 
             setSuccess('Imagen eliminada');
@@ -109,7 +178,15 @@ export function MediaLibrary() {
             setSelectedMedia(null);
             loadMedia();
         } catch (err) {
-            setError('Error al eliminar imagen');
+            setError('Error al eliminar');
+        }
+    };
+
+    const handleSelect = (item: MediaItem) => {
+        if (selectable && onSelect) {
+            onSelect(item.url);
+        } else {
+            setSelectedMedia(item);
         }
     };
 
@@ -150,9 +227,9 @@ export function MediaLibrary() {
         <div className="space-y-6">
             {/* Header */}
             <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-                <h1 className="text-2xl font-bold text-cosmic-900 dark:text-white">
-                    Biblioteca de Medios
-                </h1>
+                <h2 className="text-2xl font-bold text-cosmic-900 dark:text-white">
+                    {selectable ? 'Seleccionar imagen' : 'Biblioteca de Medios'}
+                </h2>
                 <label className="cursor-pointer inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-primary-600 to-amber-600 px-6 py-3 text-sm font-medium text-white hover:from-primary-500 hover:to-amber-500 transition-all">
                     <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.338-2.32 4.502 4.502 0 013.516 8.07" />
@@ -173,6 +250,7 @@ export function MediaLibrary() {
             {error && (
                 <div className="p-4 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800">
                     {error}
+                    <button onClick={() => setError(null)} className="ml-2 underline">Cerrar</button>
                 </div>
             )}
             {success && (
@@ -188,7 +266,7 @@ export function MediaLibrary() {
                         <div className="w-8 h-8 border-4 border-primary-500/30 border-t-primary-500 rounded-full animate-spin" />
                         <div className="flex-1">
                             <p className="text-sm font-medium text-primary-700 dark:text-primary-300">
-                                Subiendo... {uploadProgress}%
+                                Subiendo a Supabase Storage... {uploadProgress}%
                             </p>
                             <div className="mt-2 h-2 bg-primary-200 dark:bg-primary-800 rounded-full overflow-hidden">
                                 <div
@@ -238,8 +316,11 @@ export function MediaLibrary() {
                     {filteredMedia.map((item) => (
                         <div
                             key={item.id}
-                            onClick={() => setSelectedMedia(item)}
-                            className="group relative aspect-square rounded-xl overflow-hidden cursor-pointer ring-2 ring-transparent hover:ring-primary-500 transition-all"
+                            onClick={() => handleSelect(item)}
+                            className={`group relative aspect-square rounded-xl overflow-hidden cursor-pointer ring-2 transition-all ${selectable
+                                    ? 'ring-transparent hover:ring-amber-500'
+                                    : 'ring-transparent hover:ring-primary-500'
+                                }`}
                         >
                             <Image
                                 src={item.url}
@@ -253,6 +334,9 @@ export function MediaLibrary() {
                                     <p className="text-xs text-white truncate">
                                         {item.original_filename}
                                     </p>
+                                    {selectable && (
+                                        <p className="text-xs text-amber-400 mt-1">Click para seleccionar</p>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -260,8 +344,8 @@ export function MediaLibrary() {
                 </div>
             )}
 
-            {/* Detail Modal */}
-            {selectedMedia && (
+            {/* Detail Modal - Only when not in selectable mode */}
+            {!selectable && selectedMedia && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70">
                     <div className="bg-white dark:bg-cosmic-900 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-auto">
                         <div className="p-6">
@@ -309,7 +393,7 @@ export function MediaLibrary() {
 
                                 <div>
                                     <label className="block text-sm font-medium text-cosmic-700 dark:text-cosmic-300 mb-1">
-                                        URL
+                                        URL (Supabase Storage)
                                     </label>
                                     <div className="flex gap-2">
                                         <input
