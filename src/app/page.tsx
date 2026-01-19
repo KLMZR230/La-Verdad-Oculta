@@ -22,65 +22,53 @@ export default async function HomePage() {
     return (
         <div>
             {/* Hero Section */}
-            <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden bg-gradient-to-br from-cosmic-950 via-cosmic-900 to-cosmic-950">
-                {/* Background effects */}
-                <div className="absolute inset-0">
-                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary-900/20 via-transparent to-transparent" />
-                    <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary-500/10 rounded-full blur-3xl animate-pulse" />
-                    <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl animate-pulse delay-1000" />
-                </div>
+            <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+                {/* Background Image */}
+                <Image
+                    src="/hero-bg.png"
+                    alt="La Verdad Oculta"
+                    fill
+                    className="object-cover object-center"
+                    priority
+                    quality={90}
+                />
+
+                {/* Dark overlay for text readability */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/60" />
 
                 {/* Content */}
                 <div className="relative z-10 text-center px-6 py-16 max-w-4xl mx-auto">
-                    {/* Logo */}
-                    <div className="mb-8 flex justify-center">
-                        <Image
-                            src="/logo.jpg"
-                            alt="La Verdad Oculta"
-                            width={280}
-                            height={280}
-                            className="rounded-full ring-4 ring-primary-500/30 shadow-2xl shadow-primary-500/20 animate-float"
-                            priority
-                        />
-                    </div>
+                    {/* Subtitle only - the image already has the logo/title */}
+                    <div className="mt-48 sm:mt-56 lg:mt-64">
+                        <p className="text-lg sm:text-xl lg:text-2xl text-white/90 mb-8 max-w-2xl mx-auto leading-relaxed drop-shadow-lg">
+                            Una exploración filosófica y espiritual de la idea de{' '}
+                            <span className="text-amber-400 font-semibold">Dios como el universo entero</span>.
+                        </p>
 
-                    {/* Title */}
-                    <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
-                        <span className="bg-gradient-to-r from-amber-400 via-primary-400 to-amber-400 bg-clip-text text-transparent">
-                            La Verdad Oculta
-                        </span>
-                    </h1>
-
-                    {/* Subtitle */}
-                    <p className="text-lg sm:text-xl text-cosmic-300 mb-8 max-w-2xl mx-auto leading-relaxed">
-                        Una exploración filosófica y espiritual de la idea de{' '}
-                        <span className="text-primary-400 font-semibold">Dios como el universo entero</span>.
-                        Reflexiones educativas sobre espiritualidad y consciencia.
-                    </p>
-
-                    {/* CTA Buttons */}
-                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                        <Link
-                            href="/articulos"
-                            className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary-600 to-amber-600 px-8 py-4 text-lg font-semibold text-white shadow-lg shadow-primary-500/25 transition-all hover:shadow-xl hover:shadow-primary-500/30 hover:scale-105"
-                        >
-                            Leer artículos
-                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                            </svg>
-                        </Link>
-                        <Link
-                            href="/manifiesto"
-                            className="inline-flex items-center gap-2 rounded-full border-2 border-cosmic-600 px-8 py-4 text-lg font-semibold text-cosmic-300 transition-all hover:bg-cosmic-800 hover:border-primary-500 hover:text-white"
-                        >
-                            Nuestro manifiesto
-                        </Link>
+                        {/* CTA Buttons */}
+                        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                            <Link
+                                href="/articulos"
+                                className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-8 py-4 text-lg font-semibold text-black shadow-lg shadow-amber-500/25 transition-all hover:shadow-xl hover:shadow-amber-500/40 hover:scale-105"
+                            >
+                                Leer artículos
+                                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                                </svg>
+                            </Link>
+                            <Link
+                                href="/manifiesto"
+                                className="inline-flex items-center gap-2 rounded-full border-2 border-white/50 backdrop-blur-sm px-8 py-4 text-lg font-semibold text-white transition-all hover:bg-white/10 hover:border-amber-400 hover:text-amber-400"
+                            >
+                                Nuestro manifiesto
+                            </Link>
+                        </div>
                     </div>
                 </div>
 
                 {/* Scroll indicator */}
                 <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-                    <svg className="h-6 w-6 text-cosmic-500" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                    <svg className="h-8 w-8 text-white/70" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
                     </svg>
                 </div>
