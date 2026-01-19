@@ -9,7 +9,14 @@ const nextConfig = {
                 pathname: '/storage/v1/object/public/**',
             },
         ],
+        // Optimize images
+        formats: ['image/avif', 'image/webp'],
+        minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days
     },
+    // Enable compression
+    compress: true,
+    // Optimize for production
+    swcMinify: true,
     // Security headers
     async headers() {
         return [
@@ -31,6 +38,20 @@ const nextConfig = {
                     {
                         key: 'X-XSS-Protection',
                         value: '1; mode=block',
+                    },
+                    {
+                        key: 'Permissions-Policy',
+                        value: 'camera=(), microphone=(), geolocation=()',
+                    },
+                ],
+            },
+            {
+                // Cache static assets
+                source: '/(.*)\\.(jpg|jpeg|png|gif|webp|svg|ico|woff|woff2)',
+                headers: [
+                    {
+                        key: 'Cache-Control',
+                        value: 'public, max-age=31536000, immutable',
                     },
                 ],
             },

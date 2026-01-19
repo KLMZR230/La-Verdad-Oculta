@@ -1,0 +1,21 @@
+{
+    "name": "La Verdad Oculta",
+    "short_name": "LVO",
+    "description": "Reflexiones filosóficas sobre Dios y el universo",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#030712",
+    "theme_color": "#a855f7",
+    "icons": [
+        {
+            "src": "/logo.jpg",
+            "sizes": "192x192",
+            "type": "image/jpeg"
+        },
+        {
+            "src": "/logo.jpg",
+            "sizes": "512x512",
+            "type": "image/jpeg"
+        }
+    ]
+}

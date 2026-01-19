@@ -5,6 +5,7 @@ import { Footer } from '@/components/layout/Footer';
 import { ThemeProvider } from '@/components/providers/ThemeProvider';
 
 export const metadata: Metadata = {
+    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://laverdadoculta369.netlify.app'),
     title: {
         default: 'La Verdad Oculta | Reflexiones sobre Dios y el Universo',
         template: '%s | La Verdad Oculta',
