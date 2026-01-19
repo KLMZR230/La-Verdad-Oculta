@@ -6,6 +6,7 @@ import { Post, PostFormData } from '@/lib/types';
 import { slugify } from '@/lib/utils/slugify';
 import { debounce } from '@/lib/utils';
 import { TipTapEditor } from './TipTapEditor';
+import { MediaLibrary } from './MediaLibrary';
 import { savePost, publishPost, deletePost } from '@/app/actions/posts';
 
 interface PostEditorProps {
@@ -28,6 +29,7 @@ export function PostEditor({ post }: PostEditorProps) {
     const [isDeleting, setIsDeleting] = useState(false);
     const [lastSaved, setLastSaved] = useState<Date | null>(null);
     const [tagInput, setTagInput] = useState('');
+    const [showMediaPicker, setShowMediaPicker] = useState(false);
 
     // Autosave debounced
     const debouncedSave = useCallback(
@@ -215,7 +217,7 @@ export function PostEditor({ post }: PostEditorProps) {
                         <div className="bg-white dark:bg-cosmic-800 rounded-xl border border-cosmic-300 dark:border-cosmic-600 overflow-hidden">
                             <TipTapEditor
                                 content={formData.content}
-                                onChange={(content) => setFormData((prev) => ({ ...prev, content }))}
+                                onChange={(content: Record<string, unknown> | null) => setFormData((prev) => ({ ...prev, content }))}
                             />
                         </div>
                     </div>
@@ -262,7 +264,30 @@ export function PostEditor({ post }: PostEditorProps) {
                                 </button>
                             </div>
                         ) : (
-                            <div>
+                            <div className="space-y-3">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowMediaPicker(true)}
+                                    className="w-full py-8 border-2 border-dashed border-cosmic-300 dark:border-cosmic-600 rounded-xl hover:border-primary-500 dark:hover:border-primary-400 transition-colors group"
+                                >
+                                    <svg className="mx-auto h-12 w-12 text-cosmic-400 group-hover:text-primary-500" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                                    </svg>
+                                    <p className="mt-2 text-sm font-medium text-cosmic-700 dark:text-cosmic-300 group-hover:text-primary-600">
+                                        Seleccionar imagen
+                                    </p>
+                                    <p className="text-xs text-cosmic-500">
+                                        Click para abrir la biblioteca
+                                    </p>
+                                </button>
+                                <div className="relative">
+                                    <div className="absolute inset-0 flex items-center">
+                                        <div className="w-full border-t border-cosmic-200 dark:border-cosmic-700"></div>
+                                    </div>
+                                    <div className="relative flex justify-center text-xs">
+                                        <span className="bg-white dark:bg-cosmic-800 px-2 text-cosmic-500">o pegar URL</span>
+                                    </div>
+                                </div>
                                 <input
                                     type="url"
                                     value={formData.cover_image_url}
@@ -270,9 +295,6 @@ export function PostEditor({ post }: PostEditorProps) {
                                     placeholder="https://..."
                                     className="w-full text-sm rounded-lg border border-cosmic-300 dark:border-cosmic-600 bg-white dark:bg-cosmic-900 px-3 py-2 text-cosmic-900 dark:text-white placeholder-cosmic-500 focus:border-primary-500 focus:ring-1 focus:ring-primary-500/20 focus:outline-none"
                                 />
-                                <p className="mt-2 text-xs text-cosmic-500">
-                                    Pega la URL de una imagen o sube una desde la biblioteca de medios.
-                                </p>
                             </div>
                         )}
                     </div>
@@ -330,8 +352,8 @@ export function PostEditor({ post }: PostEditorProps) {
                         <div className="flex items-center gap-2">
                             <span
                                 className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${formData.status === 'published'
-                                        ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
-                                        : 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300'
+                                    ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                                    : 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300'
                                     }`}
                             >
                                 {formData.status === 'published' ? 'Publicado' : 'Borrador'}
@@ -345,6 +367,36 @@ export function PostEditor({ post }: PostEditorProps) {
                     </div>
                 </div>
             </div>
+
+            {/* Media Picker Modal */}
+            {showMediaPicker && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70">
+                    <div className="bg-white dark:bg-cosmic-900 rounded-2xl max-w-5xl w-full max-h-[90vh] overflow-auto">
+                        <div className="sticky top-0 z-10 flex items-center justify-between p-4 border-b border-cosmic-200 dark:border-cosmic-700 bg-white dark:bg-cosmic-900">
+                            <h3 className="text-lg font-semibold text-cosmic-900 dark:text-white">
+                                Seleccionar imagen de portada
+                            </h3>
+                            <button
+                                onClick={() => setShowMediaPicker(false)}
+                                className="p-2 rounded-lg hover:bg-cosmic-100 dark:hover:bg-cosmic-800"
+                            >
+                                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div className="p-6">
+                            <MediaLibrary
+                                selectable={true}
+                                onSelect={(url) => {
+                                    setFormData((prev) => ({ ...prev, cover_image_url: url }));
+                                    setShowMediaPicker(false);
+                                }}
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
