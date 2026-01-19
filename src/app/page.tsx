@@ -147,7 +147,7 @@ export default async function HomePage() {
                                         )}
                                         {post.tags && post.tags.length > 0 && (
                                             <div className="mt-4 flex flex-wrap gap-2">
-                                                {post.tags.slice(0, 3).map((tag) => (
+                                                {post.tags.slice(0, 3).map((tag: string) => (
                                                     <span
                                                         key={tag}
                                                         className="inline-flex items-center rounded-full bg-primary-100 dark:bg-primary-900/30 px-2.5 py-0.5 text-xs font-medium text-primary-700 dark:text-primary-300"
