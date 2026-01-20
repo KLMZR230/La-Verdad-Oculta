@@ -22,21 +22,23 @@ export default async function HomePage() {
     return (
         <div>
             {/* Hero Section */}
-            <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-                {/* Background Image with animation */}
-                <div className="absolute inset-0">
-                    <Image
-                        src="/hero-bg.png"
-                        alt="La Verdad Oculta"
-                        fill
-                        className="object-cover object-center hero-animated"
-                        priority
-                        quality={90}
+            <section className="relative h-screen w-full flex items-center justify-center overflow-hidden bg-black">
+                {/* Background Video */}
+                <video
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    className="absolute inset-0 h-full w-full object-cover z-0"
+                >
+                    <source
+                        src="https://pub-0c024c9a5a7a439aa0319b5140a52857.r2.dev/compressed_Gen-4%20Turbo%20Cinematic%20motion%20The%20golden%20eye%20in%20the%20center%20pulses%20with%20a%20magical%20glow%20The%20background%20galaxy%20nebula%20swirls%20and%20rotates%20slowly%20The%20planets%20rotate%20on%20their%20axis%20The%20text%20LA%20VERDAD%20OCUL.mp4"
+                        type="video/mp4"
                     />
-                </div>
+                </video>
 
-                {/* Dark overlay with shimmer effect */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/60 hero-shimmer" />
+                {/* Dark overlay for text readability */}
+                <div className="absolute inset-0 bg-black/50 z-0" />
 
                 {/* Content */}
                 <div className="relative z-10 text-center px-6 py-16 max-w-4xl mx-auto">
