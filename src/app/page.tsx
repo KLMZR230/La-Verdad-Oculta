@@ -2,6 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { createClient } from '@/lib/supabase/server';
 import { formatDate } from '@/lib/utils';
+import HeroVideo from '@/components/HeroVideo';
 
 async function getRecentPosts() {
     const supabase = await createClient();
@@ -24,18 +25,7 @@ export default async function HomePage() {
             {/* Hero Section */}
             <section className="relative h-screen w-full flex items-center justify-center overflow-hidden bg-black">
                 {/* Background Video */}
-                <video
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                    className="absolute inset-0 h-full w-full object-cover z-0"
-                >
-                    <source
-                        src="https://pub-0c024c9a5a7a439aa0319b5140a52857.r2.dev/compressed_Static_camera_shot_202601201549_c7syl.mp4"
-                        type="video/mp4"
-                    />
-                </video>
+                <HeroVideo />
 
                 {/* Dark overlay for text readability */}
                 <div className="absolute inset-0 bg-black/50 z-0" />
