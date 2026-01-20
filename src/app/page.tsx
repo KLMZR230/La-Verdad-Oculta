@@ -23,18 +23,20 @@ export default async function HomePage() {
         <div>
             {/* Hero Section */}
             <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-                {/* Background Image */}
-                <Image
-                    src="/hero-bg.png"
-                    alt="La Verdad Oculta"
-                    fill
-                    className="object-cover object-center"
-                    priority
-                    quality={90}
-                />
+                {/* Background Image with animation */}
+                <div className="absolute inset-0">
+                    <Image
+                        src="/hero-bg.png"
+                        alt="La Verdad Oculta"
+                        fill
+                        className="object-cover object-center hero-animated"
+                        priority
+                        quality={90}
+                    />
+                </div>
 
-                {/* Dark overlay for text readability */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/60" />
+                {/* Dark overlay with shimmer effect */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/60 hero-shimmer" />
 
                 {/* Content */}
                 <div className="relative z-10 text-center px-6 py-16 max-w-4xl mx-auto">
@@ -116,25 +118,25 @@ export default async function HomePage() {
                                     </div>
 
                                     {/* Content */}
-                                    <div className="p-6">
+                                    <div className="p-3 sm:p-6">
                                         {post.published_at && (
-                                            <time className="text-sm text-cosmic-500 dark:text-cosmic-400">
+                                            <time className="hidden sm:block text-sm text-cosmic-500 dark:text-cosmic-400" suppressHydrationWarning>
                                                 {formatDate(post.published_at)}
                                             </time>
                                         )}
-                                        <h3 className="mt-2 text-xl font-semibold text-cosmic-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                                        <h3 className="sm:mt-2 text-sm sm:text-xl font-semibold text-cosmic-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors line-clamp-2">
                                             <Link href={`/articulos/${post.slug}`}>
                                                 <span className="absolute inset-0" />
                                                 {post.title}
                                             </Link>
                                         </h3>
                                         {post.excerpt && (
-                                            <p className="mt-3 text-cosmic-600 dark:text-cosmic-400 line-clamp-2">
+                                            <p className="hidden sm:block mt-3 text-cosmic-600 dark:text-cosmic-400 line-clamp-2">
                                                 {post.excerpt}
                                             </p>
                                         )}
                                         {post.tags && post.tags.length > 0 && (
-                                            <div className="mt-4 flex flex-wrap gap-2">
+                                            <div className="hidden sm:flex mt-4 flex-wrap gap-2">
                                                 {post.tags.slice(0, 3).map((tag: string) => (
                                                     <span
                                                         key={tag}

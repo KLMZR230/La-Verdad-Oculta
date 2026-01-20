@@ -129,6 +129,45 @@
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
+
+  /* Hero background animation - smooth slow zoom */
+  .hero-animated {
+    animation: heroZoom 30s ease-in-out infinite alternate;
+  }
+
+  @keyframes heroZoom {
+    0% {
+      transform: scale(1);
+    }
+
+    100% {
+      transform: scale(1.1);
+    }
+  }
+
+  /* Optional shimmer overlay effect */
+  .hero-shimmer::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(45deg,
+        transparent 30%,
+        rgba(255, 215, 0, 0.03) 50%,
+        transparent 70%);
+    animation: shimmer 8s ease-in-out infinite;
+  }
+
+  @keyframes shimmer {
+
+    0%,
+    100% {
+      transform: translateX(-100%);
+    }
+
+    50% {
+      transform: translateX(100%);
+    }
+  }
 }
 
 /* TipTap Editor Styles */

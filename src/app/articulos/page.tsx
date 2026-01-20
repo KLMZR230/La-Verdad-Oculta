@@ -10,22 +10,32 @@ export const metadata: Metadata = {
     description: 'Explora nuestras reflexiones sobre espiritualidad, el universo y la conexión con el todo.',
 };
 
-interface PageProps {
-    searchParams: Promise<{
-        search?: string;
-        tag?: string;
-        page?: string;
-    }>;
+const PAGE_SIZE = 12;
+
+async function getAllTags(): Promise<string[]> {
+    const supabase = await createClient();
+
+    const { data } = await supabase
+        .from('posts')
+        .select('tags')
+        .eq('status', 'published');
+
+    if (!data) return [];
+
+    const allTags = data.flatMap((post) => post.tags || []);
+    const uniqueTags = [...new Set(allTags)].sort();
+    return uniqueTags;
 }
 
-const PAGE_SIZE = 9;
-
 async function getPosts(
-    search?: string,
-    tag?: string,
-    page: number = 1
+    page: number = 1,
+    search: string = '',
+    tag: string = ''
 ): Promise<{ posts: Post[]; total: number }> {
     const supabase = await createClient();
+
+    const from = (page - 1) * PAGE_SIZE;
+    const to = from + PAGE_SIZE - 1;
 
     let query = supabase
         .from('posts')
@@ -41,9 +51,6 @@ async function getPosts(
         query = query.contains('tags', [tag]);
     }
 
-    const from = (page - 1) * PAGE_SIZE;
-    const to = from + PAGE_SIZE - 1;
-
     const { data, count } = await query.range(from, to);
 
     return {
@@ -52,31 +59,24 @@ async function getPosts(
     };
 }
 
-async function getAllTags(): Promise<string[]> {
-    const supabase = await createClient();
-
-    const { data } = await supabase
-        .from('posts')
-        .select('tags')
-        .eq('status', 'published');
-
-    if (!data) return [];
-
-    const allTags = data.flatMap((post) => post.tags || []);
-    return [...new Set(allTags)].sort();
+interface PageProps {
+    searchParams: Promise<{
+        page?: string;
+        search?: string;
+        tag?: string;
+    }>;
 }
 
 export default async function ArticulosPage({ searchParams }: PageProps) {
     const params = await searchParams;
+    const page = parseInt(params.page || '1', 10);
     const search = params.search || '';
     const tag = params.tag || '';
-    const page = parseInt(params.page || '1', 10);
 
     const [{ posts, total }, allTags] = await Promise.all([
-        getPosts(search, tag, page),
+        getPosts(page, search, tag),
         getAllTags(),
     ]);
-
     const totalPages = Math.ceil(total / PAGE_SIZE);
 
     return (
@@ -93,7 +93,7 @@ export default async function ArticulosPage({ searchParams }: PageProps) {
                 </div>
 
                 {/* Search and Filters */}
-                <div className="mt-12">
+                <div className="mt-8 max-w-2xl mx-auto">
                     <ArticleSearch
                         initialSearch={search}
                         initialTag={tag}
@@ -101,51 +101,15 @@ export default async function ArticulosPage({ searchParams }: PageProps) {
                     />
                 </div>
 
-                {/* Active filters */}
-                {(search || tag) && (
-                    <div className="mt-6 flex flex-wrap items-center gap-2">
-                        <span className="text-sm text-cosmic-600 dark:text-cosmic-400">
-                            Filtros activos:
-                        </span>
-                        {search && (
-                            <Link
-                                href={tag ? `/articulos?tag=${tag}` : '/articulos'}
-                                className="inline-flex items-center gap-1 rounded-full bg-primary-100 dark:bg-primary-900/30 px-3 py-1 text-sm text-primary-700 dark:text-primary-300 hover:bg-primary-200 dark:hover:bg-primary-900/50 transition-colors"
-                            >
-                                &ldquo;{search}&rdquo;
-                                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </Link>
-                        )}
-                        {tag && (
-                            <Link
-                                href={search ? `/articulos?search=${search}` : '/articulos'}
-                                className="inline-flex items-center gap-1 rounded-full bg-accent-100 dark:bg-accent-900/30 px-3 py-1 text-sm text-accent-700 dark:text-accent-300 hover:bg-accent-200 dark:hover:bg-accent-900/50 transition-colors"
-                            >
-                                #{tag}
-                                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </Link>
-                        )}
-                        <Link
-                            href="/articulos"
-                            className="text-sm text-cosmic-500 hover:text-cosmic-700 dark:hover:text-cosmic-300 transition-colors"
-                        >
-                            Limpiar todo
-                        </Link>
-                    </div>
-                )}
-
                 {/* Articles Grid */}
                 {posts.length > 0 ? (
                     <>
                         <div className="mt-12 grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8">
                             {posts.map((post) => (
-                                <article
+                                <Link
                                     key={post.id}
-                                    className="group relative flex flex-col overflow-hidden rounded-2xl bg-white dark:bg-cosmic-800 shadow-sm ring-1 ring-cosmic-200 dark:ring-cosmic-700 transition-all duration-300 hover:shadow-lg hover:ring-primary-300 dark:hover:ring-primary-700"
+                                    href={`/articulos/${post.slug}`}
+                                    className="group block overflow-hidden rounded-2xl bg-white dark:bg-cosmic-800 shadow-sm ring-1 ring-cosmic-200 dark:ring-cosmic-700 transition-all duration-300 hover:shadow-lg hover:ring-primary-300 dark:hover:ring-primary-700"
                                 >
                                     {/* Cover image */}
                                     {post.cover_image_url ? (
@@ -160,48 +124,31 @@ export default async function ArticulosPage({ searchParams }: PageProps) {
                                         <div className="aspect-[16/9] bg-gradient-to-br from-primary-100 to-primary-200 dark:from-primary-900/30 dark:to-primary-800/30" />
                                     )}
 
-                                    <div className="flex flex-1 flex-col p-6">
-                                        {/* Tags */}
-                                        {post.tags && post.tags.length > 0 && (
-                                            <div className="flex flex-wrap gap-2 mb-3">
-                                                {post.tags.slice(0, 2).map((t) => (
-                                                    <Link
-                                                        key={t}
-                                                        href={`/articulos?tag=${encodeURIComponent(t)}`}
-                                                        className="relative z-10 inline-flex items-center rounded-full bg-primary-100 dark:bg-primary-900/30 px-2.5 py-0.5 text-xs font-medium text-primary-700 dark:text-primary-300 hover:bg-primary-200 dark:hover:bg-primary-900/50 transition-colors"
-                                                    >
-                                                        {t}
-                                                    </Link>
-                                                ))}
-                                            </div>
-                                        )}
-
+                                    <div className="p-3 sm:p-6">
                                         {/* Title */}
-                                        <h2 className="text-lg font-semibold text-cosmic-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
-                                            <Link href={`/articulos/${post.slug}`}>
-                                                <span className="absolute inset-0" />
-                                                {post.title}
-                                            </Link>
+                                        <h2 className="text-sm sm:text-lg font-semibold text-cosmic-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors line-clamp-2">
+                                            {post.title}
                                         </h2>
 
-                                        {/* Excerpt */}
+                                        {/* Excerpt - hidden on mobile */}
                                         {post.excerpt && (
-                                            <p className="mt-3 flex-1 text-sm text-cosmic-600 dark:text-cosmic-400 line-clamp-3">
+                                            <p className="hidden sm:block mt-3 text-sm text-cosmic-600 dark:text-cosmic-400 line-clamp-2">
                                                 {post.excerpt}
                                             </p>
                                         )}
 
-                                        {/* Date */}
+                                        {/* Date - hidden on mobile */}
                                         {post.published_at && (
                                             <time
                                                 dateTime={post.published_at}
-                                                className="mt-4 text-xs text-cosmic-500"
+                                                className="hidden sm:block mt-4 text-xs text-cosmic-500"
+                                                suppressHydrationWarning
                                             >
                                                 {formatDate(post.published_at)}
                                             </time>
                                         )}
                                     </div>
-                                </article>
+                                </Link>
                             ))}
                         </div>
 
@@ -210,11 +157,7 @@ export default async function ArticulosPage({ searchParams }: PageProps) {
                             <nav className="mt-12 flex items-center justify-center gap-2">
                                 {page > 1 && (
                                     <Link
-                                        href={`/articulos?${new URLSearchParams({
-                                            ...(search && { search }),
-                                            ...(tag && { tag }),
-                                            page: String(page - 1),
-                                        })}`}
+                                        href={`/articulos?page=${page - 1}${search ? `&search=${search}` : ''}${tag ? `&tag=${tag}` : ''}`}
                                         className="rounded-lg px-4 py-2 text-sm font-medium text-cosmic-700 dark:text-cosmic-300 hover:bg-cosmic-100 dark:hover:bg-cosmic-800 transition-colors"
                                     >
                                         ← Anterior
@@ -227,11 +170,7 @@ export default async function ArticulosPage({ searchParams }: PageProps) {
 
                                 {page < totalPages && (
                                     <Link
-                                        href={`/articulos?${new URLSearchParams({
-                                            ...(search && { search }),
-                                            ...(tag && { tag }),
-                                            page: String(page + 1),
-                                        })}`}
+                                        href={`/articulos?page=${page + 1}${search ? `&search=${search}` : ''}${tag ? `&tag=${tag}` : ''}`}
                                         className="rounded-lg px-4 py-2 text-sm font-medium text-cosmic-700 dark:text-cosmic-300 hover:bg-cosmic-100 dark:hover:bg-cosmic-800 transition-colors"
                                     >
                                         Siguiente →
@@ -258,7 +197,7 @@ export default async function ArticulosPage({ searchParams }: PageProps) {
                             </svg>
                         </div>
                         <h3 className="mt-4 text-lg font-medium text-cosmic-900 dark:text-white">
-                            No se encontraron artículos
+                            {search || tag ? 'No se encontraron artículos' : 'No hay artículos disponibles'}
                         </h3>
                         <p className="mt-2 text-cosmic-600 dark:text-cosmic-400">
                             {search || tag
@@ -268,7 +207,7 @@ export default async function ArticulosPage({ searchParams }: PageProps) {
                         {(search || tag) && (
                             <Link
                                 href="/articulos"
-                                className="mt-4 inline-flex items-center text-sm font-medium text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300"
+                                className="mt-4 inline-flex items-center text-primary-600 dark:text-primary-400 hover:underline"
                             >
                                 Ver todos los artículos
                             </Link>
@@ -279,3 +218,4 @@ export default async function ArticulosPage({ searchParams }: PageProps) {
         </div>
     );
 }
+

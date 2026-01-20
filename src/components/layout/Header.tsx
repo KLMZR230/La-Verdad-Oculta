@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
@@ -17,6 +17,11 @@ const navigation = [
 export function Header() {
     const pathname = usePathname();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+    // Cerrar menú móvil automáticamente cuando cambia la ruta
+    useEffect(() => {
+        setMobileMenuOpen(false);
+    }, [pathname]);
 
     return (
         <header className="sticky top-0 z-50 border-b border-cosmic-200/50 dark:border-cosmic-800/50 bg-white/80 dark:bg-cosmic-950/80 backdrop-blur-xl">
@@ -42,8 +47,8 @@ export function Header() {
                             key={item.name}
                             href={item.href}
                             className={`text-sm font-medium transition-colors ${pathname === item.href
-                                    ? 'text-primary-600 dark:text-primary-400'
-                                    : 'text-cosmic-700 dark:text-cosmic-300 hover:text-primary-600 dark:hover:text-primary-400'
+                                ? 'text-primary-600 dark:text-primary-400'
+                                : 'text-cosmic-700 dark:text-cosmic-300 hover:text-primary-600 dark:hover:text-primary-400'
                                 }`}
                         >
                             {item.name}
@@ -85,8 +90,8 @@ export function Header() {
                                 href={item.href}
                                 onClick={() => setMobileMenuOpen(false)}
                                 className={`block py-2 text-base font-medium transition-colors ${pathname === item.href
-                                        ? 'text-primary-600 dark:text-primary-400'
-                                        : 'text-cosmic-700 dark:text-cosmic-300 hover:text-primary-600'
+                                    ? 'text-primary-600 dark:text-primary-400'
+                                    : 'text-cosmic-700 dark:text-cosmic-300 hover:text-primary-600'
                                     }`}
                             >
                                 {item.name}
