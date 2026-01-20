@@ -87,7 +87,7 @@ export default async function HomePage() {
                     </div>
 
                     {posts.length > 0 ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8">
                             {posts.map((post) => (
                                 <article
                                     key={post.id}
