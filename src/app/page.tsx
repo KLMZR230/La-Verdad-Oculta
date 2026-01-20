@@ -32,7 +32,7 @@ export default async function HomePage() {
                     className="absolute inset-0 h-full w-full object-cover z-0"
                 >
                     <source
-                        src="https://pub-0c024c9a5a7a439aa0319b5140a52857.r2.dev/compressed_Cinematic_stillness_the_202601201433_f6731.mp4"
+                        src="https://pub-6ec1381d342e4d32a8c04c403e748053.r2.dev/compressed_Static_Image_With_Subtle_Background_Animation.mp4"
                         type="video/mp4"
                     />
                 </video>
