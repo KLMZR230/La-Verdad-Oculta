@@ -32,7 +32,7 @@ export default async function HomePage() {
                     className="absolute inset-0 h-full w-full object-cover z-0"
                 >
                     <source
-                        src="https://pub-0c024c9a5a7a439aa0319b5140a52857.r2.dev/compressed_Gen-4%20Turbo%20Cinematic%20motion%20The%20golden%20eye%20in%20the%20center%20pulses%20with%20a%20magical%20glow%20The%20background%20galaxy%20nebula%20swirls%20and%20rotates%20slowly%20The%20planets%20rotate%20on%20their%20axis%20The%20text%20LA%20VERDAD%20OCUL.mp4"
+                        src="https://pub-0c024c9a5a7a439aa0319b5140a52857.r2.dev/compressed_Cinematic_stillness_the_202601201433_f6731.mp4"
                         type="video/mp4"
                     />
                 </video>
