@@ -169,7 +169,6 @@ export default async function ArticulosPage({ searchParams }: PageProps) {
                                                         key={t}
                                                         href={`/articulos?tag=${encodeURIComponent(t)}`}
                                                         className="relative z-10 inline-flex items-center rounded-full bg-primary-100 dark:bg-primary-900/30 px-2.5 py-0.5 text-xs font-medium text-primary-700 dark:text-primary-300 hover:bg-primary-200 dark:hover:bg-primary-900/50 transition-colors"
-                                                        onClick={(e) => e.stopPropagation()}
                                                     >
                                                         {t}
                                                     </Link>
